@@ -11,7 +11,7 @@ sendDiscord() {
   if [ "$discorduri" != "" ]; then
     curl -s -H "Accept: application/json" -H "Content-Type:application/json" -X POST \
       --data-raw '{
-              "content" : " '"$1"' "
+              "content" : "'"$1"'"
             }' "$discorduri"
   fi
 }
@@ -56,8 +56,8 @@ for record_name in $record_names; do
   ###########################################
   if [[ $record == *"\"count\":0"* ]]; then
     logger -s "DDNS Updater: Record does not exist, perhaps create one first? (${ip} for ${record_name})"
-    sendDiscord "DDNS Updater: Record does not exist, perhaps create one first? (${ip} for ${record_name})"
-    exit 1
+    sendDiscord "DDNS Updater: Record '${record_name}' does not exist, perhaps create one first?"
+    continue
   fi
 
   ###########################################
@@ -66,9 +66,8 @@ for record_name in $record_names; do
   old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".*/\1/')
   # Compare if they're the same
   if [[ $ip == $old_ip ]]; then
-    sendDiscord "DDNS Updater: IP ($ip) for ${record_name} has not changed."
     logger "DDNS Updater: IP ($ip) for ${record_name} has not changed."
-    exit 0
+    continue
   fi
 
   ###########################################
