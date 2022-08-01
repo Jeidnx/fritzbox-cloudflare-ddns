@@ -19,8 +19,7 @@ After=multi-user.target
 [Service]
 Type=simple
 
-User=ddns
-Group=ddns
+User=dyndns
 
 WorkingDirectory=/opt/fritzbox-cloudflare-ddns
 ExecStart=/opt/fritzbox-cloudflare-ddns/sherver.sh
