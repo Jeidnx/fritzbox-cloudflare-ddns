@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # MIT License
 #
@@ -17,13 +17,12 @@
 
 set -efu
 
-cd "$(dirname "$0")"
-
 # We use ipv4 only for VPN
 socat TCP4-LISTEN:"${1:-8080}",reuseaddr,fork,end-close EXEC:'./dispatcher.sh' &
 pid4="$!"
 echo "$pid4" > '/tmp/sherver.pid'
 chmod g+w '/tmp/sherver.pid'
+echo "DDNS Updater: Server started"
 wait "$pid4"
 
 # IPV6

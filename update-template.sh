@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-auth_email=""      # The email used to login 'https://dash.cloudflare.com'
-auth_method=""     # Set to "global" for Global API Key or "token" for Scoped API Token
-auth_key=""        # Your API Token or Global API Key
-zone_identifier="" # Can be found in the "Overview" tab of your domain
-record_names=""    # Which records you want to be updated, seperated by spaces
-discorduri=""      # Discord Hook URI
+#auth_email=""      # The email used to login 'https://dash.cloudflare.com'
+#auth_method=""     # Set to "global" for Global API Key or "token" for Scoped API Token
+#auth_key=""        # Your API Token or Global API Key
+#zone_identifier="" # Can be found in the "Overview" tab of your domain
+#record_names=""    # Which records you want to be updated, seperated by spaces
+#discorduri=""      # Discord Hook URI
 
 sendDiscord() {
   if [ "$discorduri" != "" ]; then
@@ -40,12 +40,14 @@ else
   auth_header="Authorization: Bearer"
 fi
 
+logger "DDNS Updater: Check Initiated"
+
 for record_name in $record_names; do
   ###########################################
   ## Seek for the A record
   ###########################################
 
-  logger "DDNS Updater: Check Initiated"
+  logger "DDNS Updater: Checking record: ${record_name}"
   record=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?type=A&name=$record_name" \
     -H "X-Auth-Email: $auth_email" \
     -H "$auth_header $auth_key" \
