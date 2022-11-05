@@ -40,18 +40,26 @@ else
   auth_header="Authorization: Bearer"
 fi
 
-logger "DDNS Updater: Check Initiated"
+logger -s "DDNS Updater: Check Initiated"
 
 for record_name in $record_names; do
   ###########################################
   ## Seek for the A record
   ###########################################
 
-  logger "DDNS Updater: Checking record: ${record_name}"
-  record=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?type=A&name=$record_name" \
-    -H "X-Auth-Email: $auth_email" \
-    -H "$auth_header $auth_key" \
-    -H "Content-Type: application/json")
+  logger -s "DDNS Updater: Checking record: ${record_name}"
+  record=$(curl --write-out "%{http_code}" -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?type=A&name=$record_name" \
+                      -H "X-Auth-Email: $auth_email" \
+                      -H "$auth_header $auth_key" \
+                      -H "Content-Type: application/json")
+
+  record_status=$(echo $record | tail -c 4)
+
+  if (( $record_status >= 400 && $record_status <= 530 )); then
+    echo -e "DDNS Updater: DDNS failed for $record_identifier ($ip). DUMPING RESULTS:\n$record" | logger -s
+    sendDiscord "DDNS Updater: DDNS Update Failed: '$record_name'."
+    exit 1
+  fi
 
   ###########################################
   ## Check if the domain has an A record
@@ -68,7 +76,7 @@ for record_name in $record_names; do
   old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".*/\1/')
   # Compare if they're the same
   if [[ $ip == $old_ip ]]; then
-    logger "DDNS Updater: IP ($ip) for ${record_name} has not changed."
+    logger -s "DDNS Updater: IP ($ip) for ${record_name} has not changed."
     continue
   fi
 
@@ -92,11 +100,11 @@ for record_name in $record_names; do
   case "$update" in
   *"\"success\":false"*)
     echo -e "DDNS Updater: $ip $record_name DDNS failed for $record_identifier ($ip). DUMPING RESULTS:\n$update" | logger -s
-    sendDiscord "DDNS Updater: DDNS Update Failed: '$record_name' ('$ip')."
+    sendDiscord "DDNS Updater: DDNS Update Failed: '$record_name'."
     ;;
   *)
-    logger "DDNS Updater: $ip $record_name DDNS updated."
-    sendDiscord "DDNS Updater: $ip $record_name DDNS updated."
+    logger -s "DDNS Updater: $ip $record_name DDNS updated."
+    sendDiscord "DDNS Updater: $record_name DDNS updated."
     ;;
   esac
 done
