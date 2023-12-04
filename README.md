@@ -1,5 +1,7 @@
-fritzbox-cloudflare-ddns
-=======
+Please use [ddns-server](https://github.com/Jeidnx/ddns-server) instead.
+=====
+
+## fritzbox-cloudflare-ddns
 
 Dynamic DNS with FritzBox and Cloudflare
 
